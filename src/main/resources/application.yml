@@ -1,0 +1,18 @@
+interpreter:
+  languages:
+    python:
+      cmd: /usr/bin/python
+      fileExtension: py
+      inlineOption: -c
+    bash:
+      cmd: bash
+      fileExtension: sh
+      inlineOption: -c
+    php:
+      cmd: /usr/bin/php
+      fileExtension: php
+      inlineOption: -r
+    javascript:
+      cmd: /usr/local/bin/node
+      fileExtension: js
+      inlineOption: -e
