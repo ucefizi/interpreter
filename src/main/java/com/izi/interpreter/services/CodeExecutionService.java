@@ -32,7 +32,6 @@ public class CodeExecutionService {
 
         LanguageDto language = languageRepository.findLanguageByName(languageName);
         History history = historyRepository.findOne(sessionId);
-        log.info("History: {}", history);
         if (history == null){
             history = new History();
             history.setInstructions("");
