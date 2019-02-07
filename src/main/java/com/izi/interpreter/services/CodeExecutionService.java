@@ -1,7 +1,9 @@
 package com.izi.interpreter.services;
 
+import com.izi.interpreter.dtos.History;
 import com.izi.interpreter.dtos.LanguageDto;
 import com.izi.interpreter.dtos.ResultDto;
+import com.izi.interpreter.repositories.HistoryRepository;
 import com.izi.interpreter.repositories.LanguageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,30 +18,42 @@ import java.io.InputStreamReader;
 public class CodeExecutionService {
 
     private final LanguageRepository languageRepository;
+    private final HistoryRepository historyRepository;
 
     @Autowired
-    public CodeExecutionService(LanguageRepository languageRepository) {
+    public CodeExecutionService(LanguageRepository languageRepository, HistoryRepository historyRepository) {
         this.languageRepository = languageRepository;
+        this.historyRepository = historyRepository;
     }
 
-    public ResultDto executeCode(String languageName, String code) {
+    public ResultDto executeCode(String languageName, String code, String sessionId) {
 
         if (languageName == null || code == null) return null;
 
         LanguageDto language = languageRepository.findLanguageByName(languageName);
-        if (language == null) return new ResultDto("", "The language you provided couldn't be found.");
-        String[] command = {language.getCmd(), language.getInlineOption(), code};
+        History history = historyRepository.findOne(sessionId);
+        log.info("History: {}", history);
+        if (history == null){
+            history = new History();
+            history.setInstructions("");
+            history.setSessionId(sessionId);
+        }
+
+        if (language == null) return new ResultDto("", "The language you provided isn't supported.");
+        history.addInstruction(code);
+        historyRepository.save(history);
+        String[] command = {language.getCmd(), language.getInlineOption(), history.getInstructions()};
         try {
             Process process = Runtime.getRuntime().exec(command);
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
             BufferedReader stdErr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            StringBuilder output = new StringBuilder();
-            StringBuilder error = new StringBuilder();
+            String output = "";
+            String error = "";
             String s;
-            while ((s = stdIn.readLine()) != null) output.append(" ").append(s);
-            while ((s = stdErr.readLine()) != null) error.append(" ").append(s);
+            while ((s = stdIn.readLine()) != null) output = s;
+            while ((s = stdErr.readLine()) != null) error = s;
             process.destroy();
-            return new ResultDto(output.toString().trim(), error.toString().trim());
+            return new ResultDto(output, error);
         } catch (IOException e) {
             log.error("Exception encountered: {}", e);
             return null;

@@ -8,10 +8,6 @@ interpreter:
       cmd: bash
       fileExtension: sh
       inlineOption: -c
-    php:
-      cmd: /usr/bin/php
-      fileExtension: php
-      inlineOption: -r
     javascript:
       cmd: /usr/local/bin/node
       fileExtension: js
