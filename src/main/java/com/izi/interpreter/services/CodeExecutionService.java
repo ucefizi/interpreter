@@ -32,13 +32,7 @@ public class CodeExecutionService {
 
         LanguageDto language = languageRepository.findLanguageByName(languageName);
         History history = historyRepository.findOne(sessionId);
-        if (history == null){
-            history = new History();
-            history.setInstructions("");
-            history.setSessionId(sessionId);
-        }
 
-        if (language == null) return new ResultDto("", "The language you provided isn't supported.");
         history.addInstruction(code);
         historyRepository.save(history);
         String[] command = {language.getCmd(), language.getInlineOption(), history.getInstructions()};
