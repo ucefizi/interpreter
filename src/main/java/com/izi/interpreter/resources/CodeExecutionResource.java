@@ -44,26 +44,18 @@ public class CodeExecutionResource {
         Matcher codeMatcher = codePatter.matcher(code.getCode());
         String codeToExecute = null;
         String language = null;
-        try {
-            if (languageMatcher.find()) {
-                language = languageMatcher.group(1).trim();
-                log.info("Found language name: {}", language);
-            }
-        } catch (java.lang.IllegalStateException e) {
-            log.error("Exception encountered: {}", e);
-            return new ResponseEntity<>(new ResultDto("", "Couldn't get the language from your request."), HttpStatus.BAD_REQUEST);
+        if (languageMatcher.find()) {
+            language = languageMatcher.group(1).trim();
+            log.info("Found language name: {}", language);
         }
-        try {
-            if (codeMatcher.find()) {
-                codeToExecute = codeMatcher.group().trim();
-                log.info("Found code to execute: {}", codeToExecute);
-            }
-        } catch (java.lang.IllegalStateException e) {
-            log.error("Exception encountered: {}", e);
-            return new ResponseEntity<>(new ResultDto("", "Couldn't get any instructions from your request."), HttpStatus.BAD_REQUEST);
+
+        if (codeMatcher.find()) {
+            codeToExecute = codeMatcher.group().trim();
+            log.info("Found code to execute: {}", codeToExecute);
         }
         ResultDto result = codeExecutionService.executeCode(language, codeToExecute, sessionId);
-        if (result == null) return new ResponseEntity<>(new ResultDto("", "The language you provided is not yet supported."), HttpStatus.BAD_REQUEST);
+        if (language == null) return new ResponseEntity<>(new ResultDto("", "Couldn't detect language from your request."), HttpStatus.BAD_REQUEST);
+        if (codeToExecute == null) return new ResponseEntity<>(new ResultDto("", "Couldn't detect any code from your request."), HttpStatus.BAD_REQUEST);
         log.info("/execute returned: {}", result);
         return ResponseEntity.ok(result);
     }
