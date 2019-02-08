@@ -12,3 +12,7 @@ interpreter:
       cmd: /usr/local/bin/node
       fileExtension: js
       inlineOption: -e
+
+server:
+  session:
+    timeout: 5

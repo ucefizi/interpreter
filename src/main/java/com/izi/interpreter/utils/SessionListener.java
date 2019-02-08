@@ -8,13 +8,15 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import static com.izi.interpreter.conf.Constants.HISTORY;
-
 @Component
 public class SessionListener implements HttpSessionListener {
 
+    private final HistoryRepository historyRepository;
+
     @Autowired
-    private HistoryRepository historyRepository;
+    public SessionListener(HistoryRepository historyRepository) {
+        this.historyRepository = historyRepository;
+    }
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
@@ -24,7 +26,7 @@ public class SessionListener implements HttpSessionListener {
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        History history = (History) se.getSession().getAttribute(HISTORY);
-        historyRepository.delete(history);
+        String sessionId = se.getSession().getId();
+        historyRepository.delete(sessionId);
     }
 }
