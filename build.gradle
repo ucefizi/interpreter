@@ -32,3 +32,5 @@ dependencies {
 }
 
 compileJava.dependsOn(processResources)
+
+bootRun.dependsOn(test)
