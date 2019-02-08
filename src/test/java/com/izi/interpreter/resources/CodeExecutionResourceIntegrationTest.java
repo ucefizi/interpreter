@@ -2,12 +2,15 @@ package com.izi.interpreter.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.izi.interpreter.dtos.CodeDto;
+import com.izi.interpreter.dtos.History;
+import com.izi.interpreter.repositories.HistoryRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
@@ -33,12 +36,20 @@ public class CodeExecutionResourceIntegrationTest {
     @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
+    private HistoryRepository historyRepository;
+
 
     private CodeDto code;
+    private History history;
+    private MockHttpSession httpSession;
 
     @Before
     public void setup() {
         mockMvc = standaloneSetup(codeExecutionResource).build();
+        httpSession = new MockHttpSession();
+        history = new History("",httpSession.getId());
+        historyRepository.save(history);
     }
 
     @Test
@@ -46,6 +57,7 @@ public class CodeExecutionResourceIntegrationTest {
         code = new CodeDto("%python print 'hello'");
         mockMvc.perform(
                 post("/execute")
+                        .session(httpSession)
                         .content(mapper.writeValueAsBytes(code))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -58,6 +70,7 @@ public class CodeExecutionResourceIntegrationTest {
         code = new CodeDto("%python print hello");
         mockMvc.perform(
                 post("/execute")
+                        .session(httpSession)
                         .content(mapper.writeValueAsBytes(code))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -70,6 +83,7 @@ public class CodeExecutionResourceIntegrationTest {
         code = new CodeDto("python print hello");
         mockMvc.perform(
                 post("/execute")
+                        .session(httpSession)
                         .content(mapper.writeValueAsBytes(code))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -82,6 +96,7 @@ public class CodeExecutionResourceIntegrationTest {
         code = new CodeDto("%python ");
         mockMvc.perform(
                 post("/execute")
+                        .session(httpSession)
                         .content(mapper.writeValueAsBytes(code))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
